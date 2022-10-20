@@ -6,7 +6,6 @@ import "@nomicfoundation/hardhat-chai-matchers"
 import "hardhat-deploy"
 import "hardhat-contract-sizer"
 import "@appliedblockchain/chainlink-plugins-fund-link"
-import "./tasks"
 
 dotenv.config()
 
@@ -31,13 +30,12 @@ const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
-            hardfork: "merge",
             // If you want to do some forking set `enabled` to true
-            // forking: {
-            //     url: MAINNET_RPC_URL,
-            //     blockNumber: Number(FORKING_BLOCK_NUMBER),
-            //     enabled: false,
-            // },
+            forking: {
+                url: MAINNET_RPC_URL,
+                // blockNumber: Number(FORKING_BLOCK_NUMBER),
+                enabled: false,
+            },
             chainId: 31337,
         },
         localhost: {
@@ -103,8 +101,13 @@ const config: HardhatUserConfig = {
             {
                 version: "0.6.6",
             },
+            { version: "0.6.12" },
+            { version: "0.6.0" },
             {
                 version: "0.4.24",
+            },
+            {
+                version: "0.4.19",
             },
         ],
     },
