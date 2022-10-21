@@ -12,3 +12,7 @@ export type { IERC721 } from "./@openzeppelin/contracts/token/ERC721/IERC721";
 export { IERC721__factory } from "./factories/@openzeppelin/contracts/token/ERC721/IERC721__factory";
 export type { NftMarketplace } from "./contracts/NftMarketplace";
 export { NftMarketplace__factory } from "./factories/contracts/NftMarketplace__factory";
+export type { Attack } from "./contracts/sublesson/ReentrantVulnerable.sol/Attack";
+export { Attack__factory } from "./factories/contracts/sublesson/ReentrantVulnerable.sol/Attack__factory";
+export type { ReentrantVulnerable } from "./contracts/sublesson/ReentrantVulnerable.sol/ReentrantVulnerable";
+export { ReentrantVulnerable__factory } from "./factories/contracts/sublesson/ReentrantVulnerable.sol/ReentrantVulnerable__factory";
