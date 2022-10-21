@@ -28,17 +28,55 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export declare namespace NftMarketplace {
+  export type ListingStruct = {
+    price: PromiseOrValue<BigNumberish>;
+    seller: PromiseOrValue<string>;
+  };
+
+  export type ListingStructOutput = [BigNumber, string] & {
+    price: BigNumber;
+    seller: string;
+  };
+}
+
 export interface NftMarketplaceInterface extends utils.Interface {
   functions: {
     "buyItem(address,uint256)": FunctionFragment;
+    "cancelListing(address,uint256)": FunctionFragment;
+    "getListing(address,uint256)": FunctionFragment;
+    "getProceeds(address)": FunctionFragment;
     "listItem(address,uint256,uint256)": FunctionFragment;
+    "updateListing(address,uint256,uint256)": FunctionFragment;
+    "withdrawProceeds()": FunctionFragment;
   };
 
-  getFunction(nameOrSignatureOrTopic: "buyItem" | "listItem"): FunctionFragment;
+  getFunction(
+    nameOrSignatureOrTopic:
+      | "buyItem"
+      | "cancelListing"
+      | "getListing"
+      | "getProceeds"
+      | "listItem"
+      | "updateListing"
+      | "withdrawProceeds"
+  ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "buyItem",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelListing",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getListing",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProceeds",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "listItem",
@@ -48,17 +86,50 @@ export interface NftMarketplaceInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>
     ]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateListing",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawProceeds",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(functionFragment: "buyItem", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "cancelListing",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getListing", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getProceeds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "listItem", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateListing",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawProceeds",
+    data: BytesLike
+  ): Result;
 
   events: {
     "ItemBought(address,uint256,address,uint256,address)": EventFragment;
-    "NftListed(address,address,uint256,uint256)": EventFragment;
+    "ItemListed(address,uint256,address,uint256)": EventFragment;
+    "ListingCancelled(address,uint256,address)": EventFragment;
+    "Withdraw(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ItemBought"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "NftListed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ItemListed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ListingCancelled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
 }
 
 export interface ItemBoughtEventObject {
@@ -75,18 +146,42 @@ export type ItemBoughtEvent = TypedEvent<
 
 export type ItemBoughtEventFilter = TypedEventFilter<ItemBoughtEvent>;
 
-export interface NftListedEventObject {
-  seller: string;
+export interface ItemListedEventObject {
   nftAddress: string;
   tokenId: BigNumber;
+  seller: string;
   price: BigNumber;
 }
-export type NftListedEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber],
-  NftListedEventObject
+export type ItemListedEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  ItemListedEventObject
 >;
 
-export type NftListedEventFilter = TypedEventFilter<NftListedEvent>;
+export type ItemListedEventFilter = TypedEventFilter<ItemListedEvent>;
+
+export interface ListingCancelledEventObject {
+  nftAddress: string;
+  tokenId: BigNumber;
+  seller: string;
+}
+export type ListingCancelledEvent = TypedEvent<
+  [string, BigNumber, string],
+  ListingCancelledEventObject
+>;
+
+export type ListingCancelledEventFilter =
+  TypedEventFilter<ListingCancelledEvent>;
+
+export interface WithdrawEventObject {
+  withdrawer: string;
+  amount: BigNumber;
+}
+export type WithdrawEvent = TypedEvent<
+  [string, BigNumber],
+  WithdrawEventObject
+>;
+
+export type WithdrawEventFilter = TypedEventFilter<WithdrawEvent>;
 
 export interface NftMarketplace extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -121,10 +216,38 @@ export interface NftMarketplace extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    cancelListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[NftMarketplace.ListingStructOutput]>;
+
+    getProceeds(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     listItem(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       price: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      price: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    withdrawProceeds(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -135,10 +258,38 @@ export interface NftMarketplace extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  cancelListing(
+    nftAddress: PromiseOrValue<string>,
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getListing(
+    nftAddress: PromiseOrValue<string>,
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<NftMarketplace.ListingStructOutput>;
+
+  getProceeds(
+    user: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   listItem(
     nftAddress: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
     price: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateListing(
+    nftAddress: PromiseOrValue<string>,
+    tokenId: PromiseOrValue<BigNumberish>,
+    price: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  withdrawProceeds(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -149,12 +300,38 @@ export interface NftMarketplace extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    cancelListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<NftMarketplace.ListingStructOutput>;
+
+    getProceeds(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     listItem(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       price: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    updateListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      price: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    withdrawProceeds(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -173,18 +350,38 @@ export interface NftMarketplace extends BaseContract {
       seller?: null
     ): ItemBoughtEventFilter;
 
-    "NftListed(address,address,uint256,uint256)"(
-      seller?: PromiseOrValue<string> | null,
+    "ItemListed(address,uint256,address,uint256)"(
       nftAddress?: PromiseOrValue<string> | null,
       tokenId?: PromiseOrValue<BigNumberish> | null,
-      price?: null
-    ): NftListedEventFilter;
-    NftListed(
       seller?: PromiseOrValue<string> | null,
+      price?: null
+    ): ItemListedEventFilter;
+    ItemListed(
       nftAddress?: PromiseOrValue<string> | null,
       tokenId?: PromiseOrValue<BigNumberish> | null,
+      seller?: PromiseOrValue<string> | null,
       price?: null
-    ): NftListedEventFilter;
+    ): ItemListedEventFilter;
+
+    "ListingCancelled(address,uint256,address)"(
+      nftAddress?: PromiseOrValue<string> | null,
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      seller?: PromiseOrValue<string> | null
+    ): ListingCancelledEventFilter;
+    ListingCancelled(
+      nftAddress?: PromiseOrValue<string> | null,
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      seller?: PromiseOrValue<string> | null
+    ): ListingCancelledEventFilter;
+
+    "Withdraw(address,uint256)"(
+      withdrawer?: PromiseOrValue<string> | null,
+      amount?: PromiseOrValue<BigNumberish> | null
+    ): WithdrawEventFilter;
+    Withdraw(
+      withdrawer?: PromiseOrValue<string> | null,
+      amount?: PromiseOrValue<BigNumberish> | null
+    ): WithdrawEventFilter;
   };
 
   estimateGas: {
@@ -194,10 +391,38 @@ export interface NftMarketplace extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    cancelListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getProceeds(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     listItem(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       price: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      price: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    withdrawProceeds(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -209,10 +434,38 @@ export interface NftMarketplace extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    cancelListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getProceeds(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     listItem(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       price: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      price: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawProceeds(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

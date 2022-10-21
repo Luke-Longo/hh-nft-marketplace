@@ -11,6 +11,8 @@ error NftMarketplace__NftAlreadyListed(address nftAddress, uint256 tokenId, addr
 error NftMarketplace__NotOwner();
 error NftMarketplace__NotListed(address nftAddress, uint256 tokenId);
 error NftMarketplace__PriceNotMet(address nftAddress, uint256 tokenId, uint256 price);
+error NftMarketplace__WithdrawFailed(address withdrawer, uint256 amount);
+error NftMarketplace__NoProceeds(address withdrawer);
 
 contract NftMarketplace is ReentrancyGuard {
     struct Listing {
@@ -22,10 +24,10 @@ contract NftMarketplace is ReentrancyGuard {
     // will map the proceeds to the seller wallet address
     mapping(address => uint256) private s_proceeds;
 
-    event NftListed(
-        address indexed seller,
+    event ItemListed(
         address indexed nftAddress,
         uint256 indexed tokenId,
+        address indexed seller,
         uint256 price
     );
 
@@ -36,6 +38,14 @@ contract NftMarketplace is ReentrancyGuard {
         uint256 price,
         address seller
     );
+
+    event ListingCancelled(
+        address indexed nftAddress,
+        uint256 indexed tokenId,
+        address indexed seller
+    );
+
+    event Withdraw(address indexed withdrawer, uint256 indexed amount);
 
     modifier notListed(
         address nftAddress,
@@ -101,7 +111,7 @@ contract NftMarketplace is ReentrancyGuard {
         // double mapping, one for the nftContract address and the second that maps the tokenId to the listing
         s_listings[nftAddress][tokenId] = Listing(price, msg.sender);
         // best practice to updated mappings is to emit an event once completed the mapping, this will be listened to by the frontend
-        emit NftListed(nftAddress, msg.sender, price, tokenId);
+        emit ItemListed(nftAddress, tokenId, msg.sender, price);
     }
 
     function buyItem(address nftAddress, uint256 tokenId)
@@ -126,5 +136,51 @@ contract NftMarketplace is ReentrancyGuard {
         nft.safeTransferFrom(listing.seller, msg.sender, tokenId);
 
         emit ItemBought(nftAddress, tokenId, msg.sender, listing.price, listing.seller);
+    }
+
+    function cancelListing(address nftAddress, uint256 tokenId)
+        external
+        isOwner(nftAddress, tokenId, msg.sender)
+        isListed(nftAddress, tokenId)
+    {
+        delete (s_listings[nftAddress][tokenId]);
+        emit ListingCancelled(nftAddress, tokenId, msg.sender);
+    }
+
+    function updateListing(
+        address nftAddress,
+        uint256 tokenId,
+        uint256 price
+    ) external isOwner(nftAddress, tokenId, msg.sender) isListed(nftAddress, tokenId) {
+        s_listings[nftAddress][tokenId].price = price;
+
+        emit ItemListed(nftAddress, tokenId, msg.sender, price);
+    }
+
+    function withdrawProceeds() external nonReentrant {
+        uint256 amount = s_proceeds[msg.sender];
+        if (amount <= 0) {
+            revert NftMarketplace__NoProceeds(msg.sender);
+        }
+        s_proceeds[msg.sender] = 0;
+        (bool success, ) = msg.sender.call{value: amount}("");
+        if (!success) {
+            s_proceeds[msg.sender] = amount;
+            revert NftMarketplace__WithdrawFailed(msg.sender, amount);
+        }
+
+        emit Withdraw(msg.sender, amount);
+    }
+
+    function getListing(address nftAddress, uint256 tokenId)
+        external
+        view
+        returns (Listing memory)
+    {
+        return s_listings[nftAddress][tokenId];
+    }
+
+    function getProceeds(address user) external view returns (uint256) {
+        return s_proceeds[user];
     }
 }
