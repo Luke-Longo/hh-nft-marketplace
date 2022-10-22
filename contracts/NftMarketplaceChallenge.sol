@@ -300,6 +300,40 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         return s_listings[nftAddress][tokenId];
     }
 
+    function getListingPrice(address nftAddress, uint256 tokenId)
+        external
+        view
+        returns (Pricing memory)
+    {
+        // returns the pricing of the listing
+        return s_listings[nftAddress][tokenId].pricing;
+    }
+
+    function getListingPriceUsd(address nftAddress, uint256 tokenId)
+        external
+        view
+        returns (uint256)
+    {
+        Listing memory listing = s_listings[nftAddress][tokenId];
+        AggregatorV3Interface priceFeed;
+        uint256 price;
+        if (listing.pricing.token == Token.ETH) {
+            priceFeed = AggregatorV3Interface(i_ethUsdPriceFeed);
+            (, int256 answer, , , ) = priceFeed.latestRoundData();
+            price = uint256(answer);
+        } else if (listing.pricing.token == Token.DAI) {
+            priceFeed = AggregatorV3Interface(i_daiUsdPriceFeed);
+            (, int256 answer, , , ) = priceFeed.latestRoundData();
+            price = uint256(answer);
+        } else if (listing.pricing.token == Token.USDC) {
+            priceFeed = AggregatorV3Interface(i_usdcUsdPriceFeed);
+            (, int256 answer, , , ) = priceFeed.latestRoundData();
+            price = uint256(answer);
+        }
+
+        return (listing.pricing.amount * price) / 1e8;
+    }
+
     function getProceeds(address user, Token token) external view returns (uint256) {
         return s_proceeds[user][tokenAddresses[token]];
     }

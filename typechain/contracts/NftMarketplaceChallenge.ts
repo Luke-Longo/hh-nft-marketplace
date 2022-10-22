@@ -71,6 +71,8 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
     "buyItem((address,uint256,(uint256,uint8)))": FunctionFragment;
     "cancelListing(address,uint256)": FunctionFragment;
     "getListing(address,uint256)": FunctionFragment;
+    "getListingPrice(address,uint256)": FunctionFragment;
+    "getListingPriceUsd(address,uint256)": FunctionFragment;
     "getProceeds(address,uint8)": FunctionFragment;
     "listItem((address,uint256,(uint256,uint8)))": FunctionFragment;
     "tokenAddresses(uint8)": FunctionFragment;
@@ -84,6 +86,8 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
       | "buyItem"
       | "cancelListing"
       | "getListing"
+      | "getListingPrice"
+      | "getListingPriceUsd"
       | "getProceeds"
       | "listItem"
       | "tokenAddresses"
@@ -102,6 +106,14 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getListing",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getListingPrice",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getListingPriceUsd",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -135,6 +147,14 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getListing", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getListingPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getListingPriceUsd",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getProceeds",
     data: BytesLike
@@ -262,6 +282,18 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[NftMarketplaceChallenge.ListingStructOutput]>;
 
+    getListingPrice(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[NftMarketplaceChallenge.PricingStructOutput]>;
+
+    getListingPriceUsd(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getProceeds(
       user: PromiseOrValue<string>,
       token: PromiseOrValue<BigNumberish>,
@@ -310,6 +342,18 @@ export interface NftMarketplaceChallenge extends BaseContract {
     overrides?: CallOverrides
   ): Promise<NftMarketplaceChallenge.ListingStructOutput>;
 
+  getListingPrice(
+    nftAddress: PromiseOrValue<string>,
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<NftMarketplaceChallenge.PricingStructOutput>;
+
+  getListingPriceUsd(
+    nftAddress: PromiseOrValue<string>,
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getProceeds(
     user: PromiseOrValue<string>,
     token: PromiseOrValue<BigNumberish>,
@@ -357,6 +401,18 @@ export interface NftMarketplaceChallenge extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<NftMarketplaceChallenge.ListingStructOutput>;
+
+    getListingPrice(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<NftMarketplaceChallenge.PricingStructOutput>;
+
+    getListingPriceUsd(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getProceeds(
       user: PromiseOrValue<string>,
@@ -446,6 +502,18 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getListingPrice(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getListingPriceUsd(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getProceeds(
       user: PromiseOrValue<string>,
       token: PromiseOrValue<BigNumberish>,
@@ -490,6 +558,18 @@ export interface NftMarketplaceChallenge extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getListing(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getListingPrice(
+      nftAddress: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getListingPriceUsd(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
