@@ -337,4 +337,24 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
     function getProceeds(address user, Token token) external view returns (uint256) {
         return s_proceeds[user][tokenAddresses[token]];
     }
+
+    function getEthPriceFeed() external view returns (address) {
+        return address(i_ethUsdPriceFeed);
+    }
+
+    function getUsdcPriceFeed() external view returns (address) {
+        return address(i_usdcUsdPriceFeed);
+    }
+
+    function getDaiPriceFeed() external view returns (address) {
+        return address(i_daiUsdPriceFeed);
+    }
+
+    function getDaiToken() external view returns (address) {
+        return tokenAddresses[Token.DAI];
+    }
+
+    function getUsdcToken() external view returns (address) {
+        return tokenAddresses[Token.USDC];
+    }
 }
