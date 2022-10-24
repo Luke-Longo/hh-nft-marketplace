@@ -29,60 +29,54 @@ import type {
 } from "../common";
 
 export declare namespace NftMarketplaceChallenge {
-  export type PricingStruct = {
-    amount: PromiseOrValue<BigNumberish>;
-    token: PromiseOrValue<BigNumberish>;
-  };
-
-  export type PricingStructOutput = [BigNumber, number] & {
-    amount: BigNumber;
-    token: number;
-  };
-
   export type ListingParamsStruct = {
     nftAddress: PromiseOrValue<string>;
     tokenId: PromiseOrValue<BigNumberish>;
-    pricing: NftMarketplaceChallenge.PricingStruct;
+    amount: PromiseOrValue<BigNumberish>;
+    token: PromiseOrValue<BigNumberish>;
   };
 
   export type ListingParamsStructOutput = [
     string,
     BigNumber,
-    NftMarketplaceChallenge.PricingStructOutput
+    BigNumber,
+    number
   ] & {
     nftAddress: string;
     tokenId: BigNumber;
-    pricing: NftMarketplaceChallenge.PricingStructOutput;
+    amount: BigNumber;
+    token: number;
   };
 
   export type ListingStruct = {
-    pricing: NftMarketplaceChallenge.PricingStruct;
+    amount: PromiseOrValue<BigNumberish>;
+    token: PromiseOrValue<BigNumberish>;
     seller: PromiseOrValue<string>;
   };
 
-  export type ListingStructOutput = [
-    NftMarketplaceChallenge.PricingStructOutput,
-    string
-  ] & { pricing: NftMarketplaceChallenge.PricingStructOutput; seller: string };
+  export type ListingStructOutput = [BigNumber, number, string] & {
+    amount: BigNumber;
+    token: number;
+    seller: string;
+  };
 }
 
 export interface NftMarketplaceChallengeInterface extends utils.Interface {
   functions: {
-    "buyItem((address,uint256,(uint256,uint8)))": FunctionFragment;
+    "buyItem((address,uint256,uint256,uint8))": FunctionFragment;
     "cancelListing(address,uint256)": FunctionFragment;
     "getDaiPriceFeed()": FunctionFragment;
     "getDaiToken()": FunctionFragment;
     "getEthPriceFeed()": FunctionFragment;
     "getListing(address,uint256)": FunctionFragment;
-    "getListingPrice(address,uint256)": FunctionFragment;
     "getListingPriceUsd(address,uint256)": FunctionFragment;
     "getProceeds(address,uint8)": FunctionFragment;
     "getProceedsAll()": FunctionFragment;
     "getUsdcPriceFeed()": FunctionFragment;
     "getUsdcToken()": FunctionFragment;
-    "listItem((address,uint256,(uint256,uint8)))": FunctionFragment;
+    "listItem((address,uint256,uint256,uint8))": FunctionFragment;
     "tokenAddresses(uint8)": FunctionFragment;
-    "updateListing((address,uint256,(uint256,uint8)))": FunctionFragment;
+    "updateListing((address,uint256,uint256,uint8))": FunctionFragment;
     "withdrawAllProceeds()": FunctionFragment;
     "withdrawSingleProceeds(uint8)": FunctionFragment;
   };
@@ -95,7 +89,6 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
       | "getDaiToken"
       | "getEthPriceFeed"
       | "getListing"
-      | "getListingPrice"
       | "getListingPriceUsd"
       | "getProceeds"
       | "getProceedsAll"
@@ -130,10 +123,6 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getListing",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getListingPrice",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -195,10 +184,6 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getListing", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getListingPrice",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getListingPriceUsd",
     data: BytesLike
@@ -348,12 +333,6 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[NftMarketplaceChallenge.ListingStructOutput]>;
 
-    getListingPrice(
-      nftAddress: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[NftMarketplaceChallenge.PricingStructOutput]>;
-
     getListingPriceUsd(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -420,12 +399,6 @@ export interface NftMarketplaceChallenge extends BaseContract {
     overrides?: CallOverrides
   ): Promise<NftMarketplaceChallenge.ListingStructOutput>;
 
-  getListingPrice(
-    nftAddress: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<NftMarketplaceChallenge.PricingStructOutput>;
-
   getListingPriceUsd(
     nftAddress: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
@@ -491,12 +464,6 @@ export interface NftMarketplaceChallenge extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<NftMarketplaceChallenge.ListingStructOutput>;
-
-    getListingPrice(
-      nftAddress: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<NftMarketplaceChallenge.PricingStructOutput>;
 
     getListingPriceUsd(
       nftAddress: PromiseOrValue<string>,
@@ -604,12 +571,6 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getListingPrice(
-      nftAddress: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getListingPriceUsd(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -672,12 +633,6 @@ export interface NftMarketplaceChallenge extends BaseContract {
     getEthPriceFeed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getListing(
-      nftAddress: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getListingPrice(
       nftAddress: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides

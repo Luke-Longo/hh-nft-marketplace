@@ -32,20 +32,17 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         USDC
     }
 
-    struct Pricing {
+    struct Listing {
         uint256 amount;
         Token token;
-    }
-
-    struct Listing {
-        Pricing pricing;
         address seller;
     }
 
     struct ListingParams {
         address nftAddress;
         uint256 tokenId;
-        Pricing pricing;
+        uint256 amount;
+        Token token;
     }
 
     AggregatorV3Interface internal immutable i_ethUsdPriceFeed;
@@ -97,7 +94,7 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         // if(listing.seller == owner){
         //     revert NftMarketplace__NftAlreadyListed(nftAddress, tokenId, owner);
         // }
-        if (listing.pricing.amount > 0) {
+        if (listing.amount > 0) {
             revert NftMarketplace__NftAlreadyListed(nftAddress, tokenId, owner);
         }
         _;
@@ -118,7 +115,7 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
 
     modifier isListed(address nftAddress, uint256 tokenId) {
         Listing memory listing = s_listings[nftAddress][tokenId];
-        if (listing.pricing.amount <= 0) {
+        if (listing.amount <= 0) {
             revert NftMarketplace__NotListed(nftAddress, tokenId);
         }
         _;
@@ -133,23 +130,23 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
 
     modifier purchasePriceMet(ListingParams memory listingParams) {
         Listing memory listing = s_listings[listingParams.nftAddress][listingParams.tokenId];
-        if (listingParams.pricing.token == Token.ETH) {
-            if (msg.value < listing.pricing.amount) {
+        if (listingParams.token == Token.ETH) {
+            if (msg.value < listing.amount) {
                 revert NftMarketplace__PriceNotMet(
                     listingParams.nftAddress,
                     listingParams.tokenId,
-                    listingParams.pricing.amount,
-                    uint256(listingParams.pricing.token)
+                    listingParams.amount,
+                    uint256(listingParams.token)
                 );
             }
         } else {
-            ERC20 tokenContract = ERC20(tokenAddresses[listingParams.pricing.token]);
-            if (tokenContract.balanceOf(msg.sender) < listingParams.pricing.amount) {
+            ERC20 tokenContract = ERC20(tokenAddresses[listingParams.token]);
+            if (tokenContract.balanceOf(msg.sender) < listingParams.amount) {
                 revert NftMarketplace__PriceNotMet(
                     listingParams.nftAddress,
                     listingParams.tokenId,
-                    listingParams.pricing.amount,
-                    uint256(listingParams.pricing.token)
+                    listingParams.amount,
+                    uint256(listingParams.token)
                 );
             }
         }
@@ -174,9 +171,9 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         // checks if they are the owner of the nft
         isOwner(listingParams.nftAddress, listingParams.tokenId, msg.sender)
         //checks if the token is valid token
-        isTradable(listingParams.pricing.token)
+        isTradable(listingParams.token)
     {
-        if (listingParams.pricing.amount <= 0) {
+        if (listingParams.amount <= 0) {
             revert NftMarketplace__PriceMustBeGreaterThanZero();
         }
 
@@ -189,7 +186,8 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
 
         // double mapping, one for the nftContract address and the second that maps the ListingParams.tokenId to the listing
         s_listings[listingParams.nftAddress][listingParams.tokenId] = Listing(
-            listingParams.pricing,
+            listingParams.amount,
+            listingParams.token,
             msg.sender
         );
         // best practice to updated mappings is to emit an event once completed the mapping, this will be listened to by the frontend
@@ -200,7 +198,7 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         external
         payable
         isListed(listingParams.nftAddress, listingParams.tokenId)
-        isTradable(listingParams.pricing.token)
+        isTradable(listingParams.token)
         // checks if the price has been met
         purchasePriceMet(listingParams)
         nonReentrant
@@ -209,24 +207,22 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         Listing memory listing = s_listings[listingParams.nftAddress][listingParams.tokenId];
         IERC721 nft = IERC721(listingParams.nftAddress);
 
-        if (listingParams.pricing.token != Token.ETH) {
-            tokenContract = ERC20(tokenAddresses[listingParams.pricing.token]);
-            bool success = tokenContract.approve(listing.seller, listingParams.pricing.amount);
+        if (listingParams.token != Token.ETH) {
+            tokenContract = ERC20(tokenAddresses[listingParams.token]);
+            bool success = tokenContract.approve(listing.seller, listingParams.amount);
             if (!success) {
                 revert NftMarketplace__ERC20ApproveFailed();
             }
 
             // transfers the erc20 tokens to the marketplace contract
-            tokenContract.transferFrom(msg.sender, address(this), listingParams.pricing.amount);
+            tokenContract.transferFrom(msg.sender, address(this), listingParams.amount);
 
             // updated the sellers balance in the mapping
-            s_proceeds[listing.seller][tokenAddresses[listingParams.pricing.token]] += listingParams
-                .pricing
-                .amount;
+            s_proceeds[listing.seller][tokenAddresses[listingParams.token]] += listingParams.amount;
         }
 
         // update the sellers balance in the mapping for eth
-        if (listingParams.pricing.token == Token.ETH) {
+        if (listingParams.token == Token.ETH) {
             s_proceeds[listing.seller][tokenAddresses[Token.ETH]] += msg.value;
         }
 
@@ -254,7 +250,11 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         isOwner(listingParams.nftAddress, listingParams.tokenId, msg.sender)
         isListed(listingParams.nftAddress, listingParams.tokenId)
     {
-        s_listings[listingParams.nftAddress][listingParams.tokenId].pricing = listingParams.pricing;
+        Listing memory listing = s_listings[listingParams.nftAddress][listingParams.tokenId];
+        listing.amount = listingParams.amount;
+        listing.token = listingParams.token;
+        listing.seller = msg.sender;
+        s_listings[listingParams.nftAddress][listingParams.tokenId] = listing;
 
         emit ItemListed(listingParams, msg.sender);
     }
@@ -300,15 +300,6 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         return s_listings[nftAddress][tokenId];
     }
 
-    function getListingPrice(address nftAddress, uint256 tokenId)
-        external
-        view
-        returns (Pricing memory)
-    {
-        // returns the pricing of the listing
-        return s_listings[nftAddress][tokenId].pricing;
-    }
-
     function getListingPriceUsd(address nftAddress, uint256 tokenId)
         external
         view
@@ -317,21 +308,21 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         Listing memory listing = s_listings[nftAddress][tokenId];
         AggregatorV3Interface priceFeed;
         uint256 price;
-        if (listing.pricing.token == Token.ETH) {
+        if (listing.token == Token.ETH) {
             priceFeed = AggregatorV3Interface(i_ethUsdPriceFeed);
             (, int256 answer, , , ) = priceFeed.latestRoundData();
             price = uint256(answer);
-        } else if (listing.pricing.token == Token.DAI) {
+        } else if (listing.token == Token.DAI) {
             priceFeed = AggregatorV3Interface(i_daiUsdPriceFeed);
             (, int256 answer, , , ) = priceFeed.latestRoundData();
             price = uint256(answer);
-        } else if (listing.pricing.token == Token.USDC) {
+        } else if (listing.token == Token.USDC) {
             priceFeed = AggregatorV3Interface(i_usdcUsdPriceFeed);
             (, int256 answer, , , ) = priceFeed.latestRoundData();
             price = uint256(answer);
         }
 
-        return (listing.pricing.amount * price) / 1e8;
+        return (listing.amount * price) / 1e8;
     }
 
     function getProceeds(address user, Token token) external view returns (uint256) {

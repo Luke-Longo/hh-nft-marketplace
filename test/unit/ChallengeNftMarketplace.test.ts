@@ -44,18 +44,21 @@ import { Signer } from "ethers"
                   assert.equal(usdcAddress, networkConfig[chainId].usdcAddress)
               })
           })
-
-          describe("nft listings and selling", async function () {
+          describe("nft listings", async function () {
               beforeEach(async function () {
-                  // adds two nfts to both wallets
+                  // adds two nfts to both wallets, and approves the marketplace to transfer them
                   let tx = await nftContract.connect(deployer).mintNft()
                   await tx.wait(1)
+                  tx = await nftContract.connect(deployer).approve(nftMarketplace.address, 0)
                   let tx2 = await nftContract.connect(user).mintNft()
                   await tx2.wait(1)
+                  tx2 = await nftContract.connect(user).approve(nftMarketplace.address, 1)
                   let tx3 = await nftContractTwo.connect(deployer).mintNft()
                   await tx3.wait(1)
+                  tx3 = await nftContractTwo.connect(deployer).approve(nftMarketplace.address, 0)
                   let tx4 = await nftContractTwo.connect(user).mintNft()
                   await tx4.wait(1)
+                  tx4 = await nftContractTwo.connect(user).approve(nftMarketplace.address, 1)
               })
               it("should have minted two nfts for both wallets", async function () {
                   let deployerBalance1 = await nftContract.balanceOf(await deployer.getAddress())
@@ -67,5 +70,72 @@ import { Signer } from "ethers"
                   assert.equal(deployerBalance2.toString(), "1")
                   assert.equal(userBalance2.toString(), "1")
               })
+              it("can create a listing", async function () {
+                  let listingParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 0,
+                      amount: ethers.utils.parseEther(".1"),
+                  }
+                  let tx = await nftMarketplace.listItem(listingParams)
+                  await tx.wait(1)
+                  let listing = await nftMarketplace.getListing(
+                      listingParams.nftAddress,
+                      listingParams.tokenId
+                  )
+                  assert.equal(listing.amount.toString(), listingParams.amount.toString())
+              })
+              it("it can create a listing with token 1 mapping", async function () {
+                  let listingParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 1,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+                  let tx = await nftMarketplace.listItem(listingParams)
+                  await tx.wait(1)
+                  let listing = await nftMarketplace.getListing(
+                      listingParams.nftAddress,
+                      listingParams.tokenId
+                  )
+                  assert.equal(listing.amount.toString(), listingParams.amount.toString())
+              })
+              it("it can create a listing with token 2 mapping", async function () {
+                  let listingParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 2,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+                  let tx = await nftMarketplace.listItem(listingParams)
+                  await tx.wait(1)
+                  let listing = await nftMarketplace.getListing(
+                      listingParams.nftAddress,
+                      listingParams.tokenId
+                  )
+
+                  assert.equal(listing.amount.toString(), listingParams.amount.toString())
+              })
+              it("throws an error if incorrect parameters are input", async function () {
+                  let listingParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 3,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+                  await expect(nftMarketplace.listItem(listingParams)).to.be.reverted
+              })
+          })
+
+          describe("nft updating", function () {
+              beforeEach(async function () {
+                  let tx = await nftContract.connect(deployer).mintNft()
+                  await tx.wait(1)
+                  tx = await nftContract.connect(deployer).approve(nftMarketplace.address, 0)
+                  let tx2 = await nftContract.connect(user).mintNft()
+                  await tx2.wait(1)
+                  tx2 = await nftContract.connect(user).approve(nftMarketplace.address, 1)
+              })
+              it("should update listing", async function () {})
           })
       })
