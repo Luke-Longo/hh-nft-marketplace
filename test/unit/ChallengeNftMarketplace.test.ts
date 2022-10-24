@@ -21,8 +21,6 @@ import { Signer } from "ethers"
               const accounts = await ethers.getSigners()
               deployer = accounts[0]
               user = accounts[1]
-              user2 = accounts[2]
-              user3 = accounts[3]
               nftMarketplaceContract = (await ethers.getContract(
                   "NftMarketplaceChallenge"
               )) as NftMarketplaceChallenge
@@ -44,6 +42,30 @@ import { Signer } from "ethers"
                   assert.equal(usdcPriceFeed, networkConfig[chainId].usdcUsdPriceFeed)
                   assert.equal(daiAddress, networkConfig[chainId].daiAddress)
                   assert.equal(usdcAddress, networkConfig[chainId].usdcAddress)
+              })
+          })
+
+          describe("nft listings and selling", async function () {
+              beforeEach(async function () {
+                  // adds two nfts to both wallets
+                  let tx = await nftContract.connect(deployer).mintNft()
+                  await tx.wait(1)
+                  let tx2 = await nftContract.connect(user).mintNft()
+                  await tx2.wait(1)
+                  let tx3 = await nftContractTwo.connect(deployer).mintNft()
+                  await tx3.wait(1)
+                  let tx4 = await nftContractTwo.connect(user).mintNft()
+                  await tx4.wait(1)
+              })
+              it("should have minted two nfts for both wallets", async function () {
+                  let deployerBalance1 = await nftContract.balanceOf(await deployer.getAddress())
+                  let userBalance1 = await nftContract.balanceOf(await user.getAddress())
+                  let deployerBalance2 = await nftContractTwo.balanceOf(await deployer.getAddress())
+                  let userBalance2 = await nftContractTwo.balanceOf(await user.getAddress())
+                  assert.equal(deployerBalance1.toString(), "1")
+                  assert.equal(userBalance1.toString(), "1")
+                  assert.equal(deployerBalance2.toString(), "1")
+                  assert.equal(userBalance2.toString(), "1")
               })
           })
       })

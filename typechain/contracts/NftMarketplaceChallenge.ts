@@ -77,6 +77,7 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
     "getListingPrice(address,uint256)": FunctionFragment;
     "getListingPriceUsd(address,uint256)": FunctionFragment;
     "getProceeds(address,uint8)": FunctionFragment;
+    "getProceedsAll()": FunctionFragment;
     "getUsdcPriceFeed()": FunctionFragment;
     "getUsdcToken()": FunctionFragment;
     "listItem((address,uint256,(uint256,uint8)))": FunctionFragment;
@@ -97,6 +98,7 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
       | "getListingPrice"
       | "getListingPriceUsd"
       | "getProceeds"
+      | "getProceedsAll"
       | "getUsdcPriceFeed"
       | "getUsdcToken"
       | "listItem"
@@ -141,6 +143,10 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getProceeds",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProceedsAll",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getUsdcPriceFeed",
@@ -199,6 +205,10 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getProceeds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProceedsAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -356,6 +366,8 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getProceedsAll(overrides?: CallOverrides): Promise<[BigNumber[]]>;
+
     getUsdcPriceFeed(overrides?: CallOverrides): Promise<[string]>;
 
     getUsdcToken(overrides?: CallOverrides): Promise<[string]>;
@@ -426,6 +438,8 @@ export interface NftMarketplaceChallenge extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getProceedsAll(overrides?: CallOverrides): Promise<BigNumber[]>;
+
   getUsdcPriceFeed(overrides?: CallOverrides): Promise<string>;
 
   getUsdcToken(overrides?: CallOverrides): Promise<string>;
@@ -495,6 +509,8 @@ export interface NftMarketplaceChallenge extends BaseContract {
       token: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getProceedsAll(overrides?: CallOverrides): Promise<BigNumber[]>;
 
     getUsdcPriceFeed(overrides?: CallOverrides): Promise<string>;
 
@@ -606,6 +622,8 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getProceedsAll(overrides?: CallOverrides): Promise<BigNumber>;
+
     getUsdcPriceFeed(overrides?: CallOverrides): Promise<BigNumber>;
 
     getUsdcToken(overrides?: CallOverrides): Promise<BigNumber>;
@@ -676,6 +694,8 @@ export interface NftMarketplaceChallenge extends BaseContract {
       token: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getProceedsAll(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getUsdcPriceFeed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
