@@ -2,5 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as sublesson from "./sublesson";
+export * as test from "./test";
 export { NftMarketplace__factory } from "./NftMarketplace__factory";
 export { NftMarketplaceChallenge__factory } from "./NftMarketplaceChallenge__factory";
