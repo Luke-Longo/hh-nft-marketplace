@@ -250,11 +250,11 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         isOwner(listingParams.nftAddress, listingParams.tokenId, msg.sender)
         isListed(listingParams.nftAddress, listingParams.tokenId)
     {
-        Listing memory listing = s_listings[listingParams.nftAddress][listingParams.tokenId];
-        listing.amount = listingParams.amount;
-        listing.token = listingParams.token;
-        listing.seller = msg.sender;
-        s_listings[listingParams.nftAddress][listingParams.tokenId] = listing;
+        s_listings[listingParams.nftAddress][listingParams.tokenId] = Listing(
+            listingParams.amount,
+            listingParams.token,
+            msg.sender
+        );
 
         emit ItemListed(listingParams, msg.sender);
     }
