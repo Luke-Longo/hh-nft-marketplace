@@ -1,11 +1,11 @@
 import { assert, expect } from "chai"
 import { ethers, network, deployments } from "hardhat"
-import { NftMarketplaceChallenge, BasicNft, BasicNftTwo } from "../../typechain"
-import { developmentChains, networkConfig } from "../../helper-hardhat-config"
-import { Signer } from "ethers"
+import { NftMarketplaceChallenge, BasicNft, IERC20, BasicNftTwo } from "../../typechain"
+import { developmentChains, networkConfig, ERC20ABI } from "../../helper-hardhat-config"
+
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 const TOKEN_ID = 0
-const PRICE = ethers.utils.parseEther("0.1")
+const PRICE = ethers.utils.parseEther(".1")
 
 !developmentChains.includes(network.name)
     ? describe.skip
@@ -15,6 +15,8 @@ const PRICE = ethers.utils.parseEther("0.1")
               user: SignerWithAddress,
               nftMarketplaceContract: NftMarketplaceChallenge,
               nftContract: BasicNft,
+              daiContract: IERC20,
+              usdcContract: IERC20,
               nftContractTwo: BasicNftTwo
           let chainId = network.config.chainId!
           let listingParams = {
@@ -23,6 +25,7 @@ const PRICE = ethers.utils.parseEther("0.1")
               amount: PRICE,
               nftAddress: "",
           }
+          const provider = ethers.provider
           beforeEach(async function () {
               await deployments.fixture(["basicnfts", "challenge"])
               const accounts = await ethers.getSigners()
@@ -33,16 +36,29 @@ const PRICE = ethers.utils.parseEther("0.1")
               nftContract = await ethers.getContract("BasicNft")
               nftContractTwo = await ethers.getContract("BasicNftTwo")
               listingParams.nftAddress = nftContract.address
-              let tx = await nftContract.connect(deployer).mintNft()
-              await tx.wait(1)
-              tx = await nftContract.connect(deployer).mintNft()
-              await tx.wait(1)
-              tx = await nftContract.connect(deployer).approve(nftMarketplace.address, 0)
-              await tx.wait(1)
-              tx = await nftContract.connect(deployer).approve(nftMarketplace.address, 1)
-              await tx.wait(1)
-              let tx3 = await nftMarketplace.listItem(listingParams)
-              await tx3.wait(1)
+              daiContract = (await new ethers.Contract(
+                  networkConfig[chainId].daiAddress!,
+                  ERC20ABI,
+                  provider
+              )) as IERC20
+              usdcContract = (await new ethers.Contract(
+                  networkConfig[chainId].usdcAddress!,
+                  ERC20ABI,
+                  provider
+              )) as IERC20
+              const runMint = async () => {
+                  let tx = await nftContract.connect(deployer).mintNft()
+                  await tx.wait(1)
+                  tx = await nftContract.connect(deployer).mintNft()
+                  await tx.wait(1)
+                  tx = await nftContract.connect(deployer).approve(nftMarketplace.address, 0)
+                  await tx.wait(1)
+                  tx = await nftContract.connect(deployer).approve(nftMarketplace.address, 1)
+                  await tx.wait(1)
+                  let tx3 = await nftMarketplace.listItem(listingParams)
+                  await tx3.wait(1)
+              }
+              await runMint()
           })
 
           describe("constructor", function () {
@@ -73,7 +89,7 @@ const PRICE = ethers.utils.parseEther("0.1")
                       nftAddress: nftContract.address,
                       tokenId: 0,
                       token: 0,
-                      amount: ethers.utils.parseEther(".1"),
+                      amount: ethers.utils.parseEther("1"),
                   }
                   let tx = await nftMarketplace.listItem(listingParams)
                   await tx.wait(1)
@@ -133,10 +149,8 @@ const PRICE = ethers.utils.parseEther("0.1")
                       nftAddress: nftContract.address,
                       tokenId: 0,
                       token: 1,
-                      amount: ethers.utils.parseEther("100"),
+                      amount: ethers.utils.parseEther("2"),
                   }
-                  let tx = await nftMarketplace.updateListing(newListingParams)
-                  await tx.wait(1)
                   await expect(nftMarketplace.updateListing(newListingParams)).to.emit(
                       nftMarketplace,
                       "ItemListed"
@@ -150,31 +164,15 @@ const PRICE = ethers.utils.parseEther("0.1")
                   assert.equal(listing.amount.toString(), newListingParams.amount.toString())
                   assert.equal(listing.token.toString(), newListingParams.token.toString())
               })
-              it("should error when listing new nft"),
-                  async function () {
-                      let newListingParams = {
-                          nftAddress: nftContract.address,
-                          tokenId: 1,
-                          token: 1,
-                          amount: ethers.utils.parseEther("100"),
-                      }
-
-                      //   create a promise that resolves when the event is emitted
-                      await new Promise((res, rej) => {
-                          nftMarketplace.on("ListingUpdated", async () => {
-                              let listing = await nftMarketplace.getListing(nftContract.address, 0)
-                              assert.equal(
-                                  listing.amount.toString(),
-                                  newListingParams.amount.toString()
-                              )
-                              assert.equal(
-                                  listing.token.toString(),
-                                  newListingParams.token.toString()
-                              )
-                          })
-                          console.log("waiting for event")
-                      })
+              it("should error when listing new nft", async function () {
+                  let newListingParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 1,
+                      token: 0,
+                      amount: ethers.utils.parseEther("2"),
                   }
+                  await expect(nftMarketplace.updateListing(newListingParams)).to.be.reverted
+              })
           })
           describe("cancelListing", function () {
               it("reverts if there is no listing", async function () {
@@ -206,7 +204,7 @@ const PRICE = ethers.utils.parseEther("0.1")
                   }
                   await expect(nftMarketplace.buyItem(newParams)).to.be.reverted
               })
-              it("reverts if the price isnt met", async function () {
+              it("reverts if the price isnt met in ether", async function () {
                   await expect(
                       nftMarketplace.buyItem(listingParams, {
                           value: ethers.utils.parseEther(".001"),
@@ -224,6 +222,138 @@ const PRICE = ethers.utils.parseEther("0.1")
                   const deployerProceeds = await nftMarketplace.getProceeds(deployer.address, 0)
                   assert(newOwner.toString() == user.address)
                   assert(deployerProceeds.toString() == PRICE.toString())
+              })
+              it("reverts if the price is not met in usdc", async function () {
+                  let newParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 2,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+                  await nftMarketplace.updateListing(newParams)
+                  newParams.amount = ethers.utils.parseEther("10")
+                  await expect(nftMarketplace.buyItem(newParams)).to.be.reverted
+              })
+              it("reverts if the price is not met in dai", async function () {
+                  let newParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 1,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+                  await nftMarketplace.updateListing(newParams)
+                  newParams.amount = ethers.utils.parseEther("10")
+                  await expect(nftMarketplace.buyItem(newParams)).to.be.reverted
+              })
+              it("works with dai", async function () {
+                  let newParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 1,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+
+                  await network.provider.request({
+                      method: "hardhat_impersonateAccount",
+                      params: ["0x16b34ce9a6a6f7fc2dd25ba59bf7308e7b38e186"],
+                  })
+                  const signer = await ethers.getSigner(
+                      "0x16b34ce9a6a6f7fc2dd25ba59bf7308e7b38e186"
+                  )
+
+                  await nftMarketplace.updateListing(newParams)
+
+                  await daiContract
+                      .connect(signer)
+                      .approve(nftMarketplace.address, newParams.amount)
+
+                  expect(
+                      await nftMarketplace.connect(signer).buyItem(newParams, {
+                          gasLimit: 1000000,
+                          gasPrice: 6029165980,
+                      })
+                  ).to.emit(nftMarketplace, "ItemBought")
+                  const newOwner = await nftContract.ownerOf(TOKEN_ID)
+                  const deployerProceeds = await nftMarketplace.getProceeds(deployer.address, 1)
+                  assert(newOwner.toString() == signer.address)
+                  assert(deployerProceeds.toString() == newParams.amount.toString())
+              })
+              it("works with usdc", async function () {
+                  let newParams = {
+                      nftAddress: nftContract.address,
+                      tokenId: 0,
+                      token: 2,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+
+                  await network.provider.request({
+                      method: "hardhat_impersonateAccount",
+                      params: ["0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"],
+                  })
+                  const signer = await ethers.getSigner(
+                      "0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"
+                  )
+
+                  await nftMarketplace.updateListing(newParams)
+
+                  await usdcContract
+                      .connect(signer)
+                      .approve(nftMarketplace.address, (Number(newParams.amount) * 2).toString())
+
+                  const balance = await usdcContract.connect(signer).balanceOf(signer.address)
+                  console.log(ethers.utils.formatEther(balance).toString())
+
+                  expect(
+                      await nftMarketplace.connect(signer).buyItem(newParams, {
+                          gasLimit: 1000000,
+                          gasPrice: 6029165980,
+                      })
+                  ).to.emit(nftMarketplace, "ItemBought")
+                  const newOwner = await nftContract.ownerOf(TOKEN_ID)
+                  const deployerProceeds = await nftMarketplace.getProceeds(deployer.address, 1)
+                  assert(newOwner.toString() == signer.address)
+                  assert(deployerProceeds.toString() == newParams.amount.toString())
+              })
+          })
+          describe("getPrice", async function () {
+              it("returns the correct price in eth", async function () {
+                  let price = await nftMarketplace.getListingPriceUsd(
+                      listingParams.nftAddress,
+                      TOKEN_ID
+                  )
+                  console.log(ethers.utils.formatEther(price))
+              })
+              it("returns the correct price in dai", async function () {
+                  let newListing = {
+                      nftAddress: nftContract.address,
+                      tokenId: 1,
+                      token: 1,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+
+                  let tx = await nftMarketplace.listItem(newListing)
+                  await tx.wait(1)
+                  let price = await nftMarketplace.getListingPriceUsd(
+                      newListing.nftAddress,
+                      newListing.tokenId
+                  )
+                  console.log(ethers.utils.formatEther(price))
+              })
+              it("returns the correct price in usdc", async function () {
+                  let newListing = {
+                      nftAddress: nftContract.address,
+                      tokenId: 1,
+                      token: 2,
+                      amount: ethers.utils.parseEther("100"),
+                  }
+
+                  let tx = await nftMarketplace.listItem(newListing)
+                  await tx.wait(1)
+                  let price = await nftMarketplace.getListingPriceUsd(
+                      newListing.nftAddress,
+                      newListing.tokenId
+                  )
+                  console.log(ethers.utils.formatEther(price))
               })
           })
       })

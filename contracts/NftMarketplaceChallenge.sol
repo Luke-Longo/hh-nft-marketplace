@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
+import "hardhat/console.sol";
+
 error NftMarketplace__PriceMustBeGreaterThanZero();
 error NftMarketplace__NotApproved();
 error NftMarketplace__NftAlreadyListed(address nftAddress, uint256 tokenId, address owner);
@@ -190,6 +192,7 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
             listingParams.token,
             msg.sender
         );
+
         // best practice to updated mappings is to emit an event once completed the mapping, this will be listened to by the frontend
         emit ItemListed(listingParams, msg.sender);
     }
@@ -250,6 +253,12 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         isOwner(listingParams.nftAddress, listingParams.tokenId, msg.sender)
         isListed(listingParams.nftAddress, listingParams.tokenId)
     {
+        console.log(
+            "updating listing: ",
+            listingParams.nftAddress,
+            listingParams.tokenId,
+            listingParams.amount
+        );
         s_listings[listingParams.nftAddress][listingParams.tokenId] = Listing(
             listingParams.amount,
             listingParams.token,
