@@ -1,9 +1,8 @@
 import { assert, expect } from "chai"
 import { ethers, network, deployments } from "hardhat"
-import { NftMarketplaceChallenge, BasicNft, IERC20, BasicNftTwo } from "../../typechain"
-import { developmentChains, networkConfig, ERC20ABI } from "../../helper-hardhat-config"
+import { NftMarketplaceChallenge, BasicNft, IERC20, BasicNftTwo, WETH9 } from "../../typechain"
+import { developmentChains, networkConfig, ERC20ABI, WETHABI } from "../../helper-hardhat-config"
 import { swap } from "../../scripts/swap"
-
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 const TOKEN_ID = 0
 const PRICE = ethers.utils.parseEther(".1")
@@ -286,6 +285,32 @@ const PRICE = ethers.utils.parseEther(".1")
                       token: 2,
                       amount: ethers.utils.parseEther("100"),
                   }
+
+                  const wethContract = (await new ethers.Contract(
+                      networkConfig[chainId].wethAddress!,
+                      WETHABI,
+                      user
+                  )) as WETH9
+                  await wethContract.connect(user).deposit({ value: ethers.utils.parseEther("10") })
+
+                  const deadline = Math.floor(Date.now() / 1000) + 60 * 20
+
+                  const args = {
+                      tokenIn: networkConfig[chainId].wethAddress!,
+                      tokenOut: usdcContract.address,
+                      fee: 3000,
+                      recipient: user.address,
+                      deadline,
+                      amountIn: ethers.utils.parseEther("9.9").toString(),
+                      amountOutMinimum: "0",
+                      sqrtPriceLimitX96: "0",
+                  }
+
+                  await swap(args)
+
+                  const balanceUsdc = await usdcContract.balanceOf(user.address)
+
+                  console.log("balanceUsdc", balanceUsdc.toString())
 
                   expect(
                       await nftMarketplace.connect(user).buyItem(newParams, {

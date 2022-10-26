@@ -46,3 +46,5 @@ export type { BasicNft } from "./contracts/test/BasicNft";
 export { BasicNft__factory } from "./factories/contracts/test/BasicNft__factory";
 export type { BasicNftTwo } from "./contracts/test/BasicNftTwo";
 export { BasicNftTwo__factory } from "./factories/contracts/test/BasicNftTwo__factory";
+export type { WETH9 } from "./contracts/test/WETH.sol/WETH9";
+export { WETH9__factory } from "./factories/contracts/test/WETH.sol/WETH9__factory";
