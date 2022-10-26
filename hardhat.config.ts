@@ -34,7 +34,7 @@ const config: HardhatUserConfig = {
             hardfork: "merge",
             forking: {
                 url: MAINNET_RPC_URL,
-                // blockNumber: Number(FORKING_BLOCK_NUMBER),
+                blockNumber: Number(FORKING_BLOCK_NUMBER),
                 enabled: true,
             },
             chainId: 31337,

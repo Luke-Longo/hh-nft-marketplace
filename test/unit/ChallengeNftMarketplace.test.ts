@@ -4,6 +4,7 @@ import { NftMarketplaceChallenge, BasicNft, IERC20, BasicNftTwo, WETH9 } from ".
 import { developmentChains, networkConfig, ERC20ABI, WETHABI } from "../../helper-hardhat-config"
 import { swap } from "../../scripts/swap"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { getGasPrice } from "../../scripts/getCurrentGas"
 const TOKEN_ID = 0
 const PRICE = ethers.utils.parseEther(".1")
 
@@ -269,8 +270,7 @@ const PRICE = ethers.utils.parseEther(".1")
 
                   expect(
                       await nftMarketplace.connect(signer).buyItem(newParams, {
-                          gasLimit: 1000000,
-                          gasPrice: 6029165980,
+                          gasPrice: await getGasPrice(),
                       })
                   ).to.emit(nftMarketplace, "ItemBought")
                   const newOwner = await nftContract.ownerOf(TOKEN_ID)
@@ -291,16 +291,15 @@ const PRICE = ethers.utils.parseEther(".1")
                       WETHABI,
                       user
                   )) as WETH9
-                  await wethContract.connect(user).deposit({ value: ethers.utils.parseEther("10") })
 
-                  const deadline = Math.floor(Date.now() / 1000) + 60 * 20
+                  await wethContract.connect(user).deposit({ value: ethers.utils.parseEther("10") })
 
                   const args = {
                       tokenIn: networkConfig[chainId].wethAddress!,
                       tokenOut: usdcContract.address,
                       fee: 3000,
                       recipient: user.address,
-                      deadline,
+                      deadline: Math.floor(Date.now() / 1000) + 60 * 20,
                       amountIn: ethers.utils.parseEther("9.9").toString(),
                       amountOutMinimum: "0",
                       sqrtPriceLimitX96: "0",
@@ -308,14 +307,14 @@ const PRICE = ethers.utils.parseEther(".1")
 
                   await swap(args)
 
-                  const balanceUsdc = await usdcContract.balanceOf(user.address)
+                  const balanceUsdc = await usdcContract.connect(user).balanceOf(user.address)
 
                   console.log("balanceUsdc", balanceUsdc.toString())
 
                   expect(
                       await nftMarketplace.connect(user).buyItem(newParams, {
                           gasLimit: 1000000,
-                          gasPrice: 6029165980,
+                          gasPrice: await getGasPrice(),
                       })
                   ).to.emit(nftMarketplace, "ItemBought")
                   const newOwner = await nftContract.ownerOf(TOKEN_ID)
