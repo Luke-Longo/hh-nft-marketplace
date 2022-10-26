@@ -2,6 +2,7 @@ import { assert, expect } from "chai"
 import { ethers, network, deployments } from "hardhat"
 import { NftMarketplaceChallenge, BasicNft, IERC20, BasicNftTwo } from "../../typechain"
 import { developmentChains, networkConfig, ERC20ABI } from "../../helper-hardhat-config"
+import { swap } from "../../scripts/swap"
 
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 const TOKEN_ID = 0
@@ -285,34 +286,16 @@ const PRICE = ethers.utils.parseEther(".1")
                       token: 2,
                       amount: ethers.utils.parseEther("100"),
                   }
-                  //   integrate uniswap to get usdc
-
-                  //   await network.provider.request({
-                  //       method: "hardhat_impersonateAccount",
-                  //       params: ["0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"],
-                  //   })
-                  //   const signer = await ethers.getSigner(
-                  //       "0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"
-                  //   )
-
-                  //   await nftMarketplace.updateListing(newParams)
-
-                  //   await usdcContract
-                  //       .connect(signer)
-                  //       .approve(nftMarketplace.address, (Number(newParams.amount) * 2).toString())
-
-                  //   const balance = await usdcContract.connect(signer).balanceOf(signer.address)
-                  //   console.log(ethers.utils.formatEther(balance).toString())
 
                   expect(
-                      await nftMarketplace.connect(signer).buyItem(newParams, {
+                      await nftMarketplace.connect(user).buyItem(newParams, {
                           gasLimit: 1000000,
                           gasPrice: 6029165980,
                       })
                   ).to.emit(nftMarketplace, "ItemBought")
                   const newOwner = await nftContract.ownerOf(TOKEN_ID)
                   const deployerProceeds = await nftMarketplace.getProceeds(deployer.address, 1)
-                  assert(newOwner.toString() == signer.address)
+                  assert(newOwner.toString() == user.address)
                   assert(deployerProceeds.toString() == newParams.amount.toString())
               })
           })
