@@ -285,23 +285,24 @@ const PRICE = ethers.utils.parseEther(".1")
                       token: 2,
                       amount: ethers.utils.parseEther("100"),
                   }
+                  //   integrate uniswap to get usdc
 
-                  await network.provider.request({
-                      method: "hardhat_impersonateAccount",
-                      params: ["0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"],
-                  })
-                  const signer = await ethers.getSigner(
-                      "0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"
-                  )
+                  //   await network.provider.request({
+                  //       method: "hardhat_impersonateAccount",
+                  //       params: ["0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"],
+                  //   })
+                  //   const signer = await ethers.getSigner(
+                  //       "0x5414d89a8bf7e99d732bc52f3e6a3ef461c0c078"
+                  //   )
 
-                  await nftMarketplace.updateListing(newParams)
+                  //   await nftMarketplace.updateListing(newParams)
 
-                  await usdcContract
-                      .connect(signer)
-                      .approve(nftMarketplace.address, (Number(newParams.amount) * 2).toString())
+                  //   await usdcContract
+                  //       .connect(signer)
+                  //       .approve(nftMarketplace.address, (Number(newParams.amount) * 2).toString())
 
-                  const balance = await usdcContract.connect(signer).balanceOf(signer.address)
-                  console.log(ethers.utils.formatEther(balance).toString())
+                  //   const balance = await usdcContract.connect(signer).balanceOf(signer.address)
+                  //   console.log(ethers.utils.formatEther(balance).toString())
 
                   expect(
                       await nftMarketplace.connect(signer).buyItem(newParams, {

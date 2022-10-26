@@ -16,6 +16,7 @@ type NetworkConfigItem = {
     usdcUsdPriceFeed?: string
     daiAddress?: string
     usdcAddress?: string
+    wethAddress?: string
 }
 
 type NetworkConfigMap = {
@@ -35,6 +36,7 @@ export const networkConfig: NetworkConfigMap = {
         usdcUsdPriceFeed: "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
         daiAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        wethAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     31337: {
         name: "localhost",
@@ -48,6 +50,7 @@ export const networkConfig: NetworkConfigMap = {
         usdcUsdPriceFeed: "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
         daiAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        wethAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     1: {
         name: "mainnet",
@@ -59,6 +62,7 @@ export const networkConfig: NetworkConfigMap = {
         usdcUsdPriceFeed: "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
         daiAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        wethAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     5: {
         name: "goerli",
@@ -75,6 +79,7 @@ export const networkConfig: NetworkConfigMap = {
         usdcUsdPriceFeed: "0xAb5c49580294Aff77670F839ea425f5b78ab3Ae7",
         daiAddress: "0x73967c6a0904aA032C103b4104747E88c566B1A2",
         usdcAddress: "0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557",
+        wethAddress: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
     },
     137: {
         name: "polygon",
@@ -84,6 +89,7 @@ export const networkConfig: NetworkConfigMap = {
         jobId: "12b86114fa9e46bab3ca436f88e1a912",
         fee: "100000000000000",
         fundAmount: BigNumber.from("100000000000000"),
+        wethAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
     },
 }
 
