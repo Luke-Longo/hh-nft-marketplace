@@ -61,7 +61,6 @@ const PRICE = ethers.utils.parseEther(".1")
               }
               await runMint()
           })
-
           describe("constructor", function () {
               it("should set immutable variables", async function () {
                   let ethPriceFeed: string = await nftMarketplace.getEthPriceFeed()
@@ -144,8 +143,14 @@ const PRICE = ethers.utils.parseEther(".1")
               })
           })
           describe("updateListing", function () {
+              beforeEach(async function () {
+                  await nftMarketplace.listItem(listingParams)
+              })
               it("should update listing and emit event", async function () {
-                  let oldListing = await nftMarketplace.getListing(nftContract.address, 0)
+                  let oldListing = await nftMarketplace.getListing(
+                      listingParams.nftAddress,
+                      listingParams.tokenId
+                  )
                   let newListingParams = {
                       nftAddress: nftContract.address,
                       tokenId: 0,
@@ -168,7 +173,7 @@ const PRICE = ethers.utils.parseEther(".1")
               it("should error when listing new nft", async function () {
                   let newListingParams = {
                       nftAddress: nftContract.address,
-                      tokenId: 1,
+                      tokenId: 2,
                       token: 0,
                       amount: ethers.utils.parseEther("2"),
                   }
@@ -458,7 +463,6 @@ const PRICE = ethers.utils.parseEther(".1")
                   assert.equal(proceedBalance.toString(), sellerBalance.toString())
               })
           })
-
           describe("getPrice", async function () {
               it("returns the correct price in eth", async function () {
                   let price = await nftMarketplace.getListingPriceUsd(
