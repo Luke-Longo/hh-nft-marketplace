@@ -128,7 +128,7 @@
 //           })
 //           describe("withdrawProceeds", function () {
 //               it("doesn't allow 0 proceed withdrawls", async function () {
-//                   await expect(nftMarketplace.withdrawProceeds()).to.be.reverted("NoProceeds")
+//                   await expect(nftMarketplace.withdrawProceeds()).to.be.reverted
 //               })
 //               it("withdraws proceeds", async function () {
 //                   await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)

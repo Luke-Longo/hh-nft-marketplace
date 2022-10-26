@@ -295,6 +295,12 @@ contract NftMarketplaceChallenge is ReentrancyGuard {
         emit Withdraw(msg.sender, amount, uint256(token));
     }
 
+    function withdrawAllProceeds() external nonReentrant {
+        for (uint256 i = 0; i < 3; i++) {
+            withdrawSingleProceeds(Token(i));
+        }
+    }
+
     function getListing(address nftAddress, uint256 tokenId)
         external
         view

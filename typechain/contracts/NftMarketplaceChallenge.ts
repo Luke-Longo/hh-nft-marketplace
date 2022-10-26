@@ -77,6 +77,7 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
     "listItem((address,uint256,uint256,uint8))": FunctionFragment;
     "tokenAddresses(uint8)": FunctionFragment;
     "updateListing((address,uint256,uint256,uint8))": FunctionFragment;
+    "withdrawAllProceeds()": FunctionFragment;
     "withdrawSingleProceeds(uint8)": FunctionFragment;
   };
 
@@ -96,6 +97,7 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
       | "listItem"
       | "tokenAddresses"
       | "updateListing"
+      | "withdrawAllProceeds"
       | "withdrawSingleProceeds"
   ): FunctionFragment;
 
@@ -156,6 +158,10 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
     values: [NftMarketplaceChallenge.ListingParamsStruct]
   ): string;
   encodeFunctionData(
+    functionFragment: "withdrawAllProceeds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "withdrawSingleProceeds",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -205,6 +211,10 @@ export interface NftMarketplaceChallengeInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateListing",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawAllProceeds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -356,6 +366,10 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    withdrawAllProceeds(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     withdrawSingleProceeds(
       token: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -415,6 +429,10 @@ export interface NftMarketplaceChallenge extends BaseContract {
 
   updateListing(
     listingParams: NftMarketplaceChallenge.ListingParamsStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  withdrawAllProceeds(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -479,6 +497,8 @@ export interface NftMarketplaceChallenge extends BaseContract {
       listingParams: NftMarketplaceChallenge.ListingParamsStruct,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawAllProceeds(overrides?: CallOverrides): Promise<void>;
 
     withdrawSingleProceeds(
       token: PromiseOrValue<BigNumberish>,
@@ -584,6 +604,10 @@ export interface NftMarketplaceChallenge extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    withdrawAllProceeds(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     withdrawSingleProceeds(
       token: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -644,6 +668,10 @@ export interface NftMarketplaceChallenge extends BaseContract {
 
     updateListing(
       listingParams: NftMarketplaceChallenge.ListingParamsStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawAllProceeds(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

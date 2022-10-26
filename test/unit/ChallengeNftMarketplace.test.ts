@@ -1,6 +1,6 @@
 import { assert, expect } from "chai"
 import { ethers, network, deployments } from "hardhat"
-import { NftMarketplaceChallenge, BasicNft, IERC20, BasicNftTwo, WETH9 } from "../../typechain"
+import { NftMarketplaceChallenge, BasicNft, IERC20, WETH9 } from "../../typechain"
 import { developmentChains, networkConfig, ERC20ABI, WETHABI } from "../../helper-hardhat-config"
 import { swap } from "../../scripts/swap"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
@@ -17,8 +17,7 @@ const PRICE = ethers.utils.parseEther(".1")
               nftMarketplaceContract: NftMarketplaceChallenge,
               nftContract: BasicNft,
               daiContract: IERC20,
-              usdcContract: IERC20,
-              nftContractTwo: BasicNftTwo
+              usdcContract: IERC20
           let chainId = network.config.chainId!
           let listingParams = {
               tokenId: TOKEN_ID,
@@ -35,7 +34,6 @@ const PRICE = ethers.utils.parseEther(".1")
               nftMarketplaceContract = await ethers.getContract("NftMarketplaceChallenge")
               nftMarketplace = await nftMarketplaceContract.connect(deployer)
               nftContract = await ethers.getContract("BasicNft")
-              nftContractTwo = await ethers.getContract("BasicNftTwo")
               listingParams.nftAddress = nftContract.address
               daiContract = (await new ethers.Contract(
                   networkConfig[chainId].daiAddress!,
@@ -78,79 +76,83 @@ const PRICE = ethers.utils.parseEther(".1")
           })
           describe("listItem", async function () {
               it("emits an event after listing an item", async function () {
-                  listingParams.tokenId = 1
-                  await expect(nftMarketplace.listItem(listingParams)).to.emit(
+                  let newListingParams = {
+                      tokenId: 1,
+                      token: 0,
+                      amount: PRICE,
+                      nftAddress: nftContract.address,
+                  }
+
+                  await expect(nftMarketplace.listItem(newListingParams)).to.emit(
                       nftMarketplace,
                       "ItemListed"
                   )
               })
               it("can create a listing", async function () {
-                  let listingParams = {
+                  let newListingParams = {
                       nftAddress: nftContract.address,
-                      tokenId: 0,
+                      tokenId: 1,
                       token: 0,
                       amount: ethers.utils.parseEther("1"),
                   }
-                  let tx = await nftMarketplace.listItem(listingParams)
+                  let tx = await nftMarketplace.listItem(newListingParams)
                   await tx.wait(1)
                   let listing = await nftMarketplace.getListing(
-                      listingParams.nftAddress,
-                      listingParams.tokenId
+                      newListingParams.nftAddress,
+                      newListingParams.tokenId
                   )
-                  assert.equal(listing.amount.toString(), listingParams.amount.toString())
-                  assert.equal(listing.token, listingParams.token)
+                  assert.equal(listing.amount.toString(), newListingParams.amount.toString())
+                  assert.equal(listing.token, newListingParams.token)
                   assert.equal(listing.seller, deployer.address)
               })
               it("it can create a listing with token 1 mapping", async function () {
-                  let listingParams = {
+                  let newListingParams = {
                       nftAddress: nftContract.address,
-                      tokenId: 0,
+                      tokenId: 1,
                       token: 1,
                       amount: ethers.utils.parseEther("100"),
                   }
-                  let tx = await nftMarketplace.listItem(listingParams)
+                  let tx = await nftMarketplace.listItem(newListingParams)
                   await tx.wait(1)
                   let listing = await nftMarketplace.getListing(
-                      listingParams.nftAddress,
-                      listingParams.tokenId
+                      newListingParams.nftAddress,
+                      newListingParams.tokenId
                   )
-                  assert.equal(listing.amount.toString(), listingParams.amount.toString())
+                  assert.equal(listing.amount.toString(), newListingParams.amount.toString())
               })
               it("it can create a listing with token 2 mapping", async function () {
-                  let listingParams = {
+                  let newListingParams = {
                       nftAddress: nftContract.address,
-                      tokenId: 0,
+                      tokenId: 1,
                       token: 2,
                       amount: ethers.utils.parseEther("100"),
                   }
-                  let tx = await nftMarketplace.listItem(listingParams)
+                  let tx = await nftMarketplace.listItem(newListingParams)
                   await tx.wait(1)
                   let listing = await nftMarketplace.getListing(
-                      listingParams.nftAddress,
-                      listingParams.tokenId
+                      newListingParams.nftAddress,
+                      newListingParams.tokenId
                   )
 
-                  assert.equal(listing.amount.toString(), listingParams.amount.toString())
+                  assert.equal(listing.amount.toString(), newListingParams.amount.toString())
               })
               it("throws an error if incorrect parameters are input", async function () {
-                  let listingParams = {
+                  let newListingParams = {
                       nftAddress: nftContract.address,
-                      tokenId: 0,
+                      tokenId: 1,
                       token: 3,
                       amount: ethers.utils.parseEther("100"),
                   }
-                  await expect(nftMarketplace.listItem(listingParams)).to.be.reverted
+                  await expect(nftMarketplace.listItem(newListingParams)).to.be.reverted
               })
           })
           describe("updateListing", function () {
-              beforeEach(async function () {
-                  await nftMarketplace.listItem(listingParams)
-              })
               it("should update listing and emit event", async function () {
                   let oldListing = await nftMarketplace.getListing(
                       listingParams.nftAddress,
                       listingParams.tokenId
                   )
+
                   let newListingParams = {
                       nftAddress: nftContract.address,
                       tokenId: 0,
